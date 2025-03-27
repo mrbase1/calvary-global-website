@@ -1,0 +1,320 @@
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Heart, Calendar } from 'lucide-react';
+import cgphcImage from '../assets/cgphc-image.jpg';
+import nationalDayImage from '../assets/national-day-of-prayer.jpg';
+import comiImage1 from '../assets/comi-image.jpg';
+import comiImage2 from '../assets/comi-image-2.jpg';
+import comiImage3 from '../assets/comi-image-3.jpg';
+import comiImage4 from '../assets/comi-image-4.jpg';
+import comiImage5 from '../assets/comi-image-5.jpg';
+import comiImage6 from '../assets/comi-image-6.jpg';
+import comiImage7 from '../assets/comi-image-7.jpg';
+import heroImage from '../assets/rev-keenam-4.jpg';
+import dropPrayerImage from '../assets/drop-prayer-requests.jpg';
+import { Footer } from '../components/Footer';
+
+export function Home() {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const images = [
+    { src: comiImage1, alt: 'Prayer Meeting 1' },
+    { src: comiImage2, alt: 'Prayer Meeting 2' },
+    { src: comiImage3, alt: 'Prayer Meeting 3' },
+    { src: comiImage4, alt: 'Prayer Meeting 4' },
+    { src: comiImage5, alt: 'Prayer Meeting 5' },
+    { src: comiImage6, alt: 'Prayer Meeting 6' },
+    { src: comiImage7, alt: 'Prayer Meeting 7' },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Section */}
+      <section 
+        className="relative bg-cover bg-center bg-no-repeat h-[600px]" 
+        style={{ backgroundImage: `url(${heroImage})` }}
+      >
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-black bg-opacity-60"></div>
+        
+        {/* Content */}
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
+          <div className="text-center w-full">
+            <h1 className="text-4xl font-extrabold text-white sm:text-5xl md:text-6xl">
+              Welcome to Calvary Global
+            </h1>
+            <p className="mt-3 max-w-md mx-auto text-base text-gray-100 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+              Join our community in prayer, worship, and fellowship
+            </p>
+            <div className="mt-10 flex justify-center space-x-4">
+              <Link
+                to="/events"
+                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
+              >
+                <Calendar className="mr-2 -ml-1 h-5 w-5" />
+                View Events
+              </Link>
+              <Link
+                to="/prayer-requests"
+                className="inline-flex items-center px-6 py-3 border border-white text-base font-medium rounded-md text-white bg-transparent hover:bg-white hover:text-purple-600 transition-colors"
+              >
+                <Heart className="mr-2 -ml-1 h-5 w-5" />
+                Prayer Requests
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            <div className="text-center">
+              <div className="flex items-center justify-center h-12 w-12 rounded-md bg-purple-600 text-white mx-auto">
+                <svg 
+                  className="h-6 w-6" 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="mt-4 text-lg font-medium text-gray-900">Community</h3>
+              <p className="mt-2 text-base text-gray-500">
+                Join a vibrant community of believers from around the world
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="flex items-center justify-center h-12 w-12 rounded-md bg-purple-600 text-white mx-auto">
+                <svg 
+                  className="h-6 w-6" 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+              <h3 className="mt-4 text-lg font-medium text-gray-900">Events</h3>
+              <p className="mt-2 text-base text-gray-500">
+                Participate in various spiritual and social events
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="flex items-center justify-center h-12 w-12 rounded-md bg-purple-600 text-white mx-auto">
+                <svg 
+                  className="h-6 w-6" 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="mt-4 text-lg font-medium text-gray-900">Prayer</h3>
+              <p className="mt-2 text-base text-gray-500">
+                Share prayer requests and pray for others
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white">
+        <div className="py-8 lg:py-16 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div className="text-gray-500 sm:text-lg">
+              <h2 className="mb-4 text-4xl tracking-tight font-bold text-gray-900">
+                A Prayer Network targeted at promoting the{' '}
+                <span className="font-extrabold">peace, unity and progress</span>{' '}
+                of Nations
+              </h2>
+              <p className="mb-4 font-light">
+                Calvary Global Prayer and Healing Centre Nigeria is a Prayer
+                network, comprising pastors, ordained ministers of the bible, and
+                prayer-loving believers who converge to pray for the peace, unity,
+                and progress of our dear nation Nigeria, going from city to city.
+              </p>
+              <p className="mb-4 font-medium">
+                Supported by Calvary Global Outreach Ministries, USA, and convened
+                by{' '}
+                <Link
+                  to="#"
+                  className="text-base font-medium text-purple-600 hover:text-gray-600"
+                >
+                  Rev. Godswill Keenam
+                </Link>
+                .
+              </p>
+              <Link
+                to="/about"
+                className="inline-flex items-center font-medium text-purple-600 hover:text-purple-800 mr-16"
+              >
+                Learn more
+                <svg
+                  className="ml-1 w-6 h-6"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </Link>
+              <Link
+                  to="/prayer-requests"
+                  className="inline-flex items-center px-4 py-2 text-purple-600 hover:bg-purple-600 hover:text-white transition-colors"
+                >
+                  <Heart className="mr-2 h-5 w-5" />
+                  Submit Prayer Request
+                </Link>
+            </div>
+            <div className="relative h-[500px] rounded-lg overflow-hidden shadow-xl">
+              <img
+                src={dropPrayerImage}
+                alt="Prayer Ministry"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Image Gallery */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
+            54th World Conference in USA
+          </h2>
+          <h4 className='text-center text-gray-600 mb-8'>
+            View Photos from the
+            54th World Conference held in the United States held in January this year.
+          </h4>
+          <h5 className='text-center text-gray-400'>click pics to enlarge</h5>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {images.map((image, index) => (
+              <div 
+                key={index} 
+                className="cursor-pointer transform transition-transform hover:scale-105"
+                onClick={() => setSelectedImage(image.src)}
+              >
+                <img
+                  src={image.src}
+                  alt={image.alt}
+                  className="w-full h-64 object-cover rounded-lg shadow-md"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Lightbox */}
+        {selectedImage && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+            onClick={() => setSelectedImage(null)}
+          >
+            <div className="relative max-w-4xl max-h-[90vh] w-full">
+              <button
+                className="absolute top-4 right-4 text-white text-xl hover:text-purple-400"
+                onClick={() => setSelectedImage(null)}
+              >
+                ×
+              </button>
+              <img
+                src={selectedImage}
+                alt="Enlarged view"
+                className="w-full h-full object-contain"
+              />
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* Call to Action */}
+      <section className="bg-purple-700 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold text-white mb-4">
+            Join Our Prayer Movement
+          </h2>
+          <p className="text-xl text-purple-100 mb-8 max-w-2xl mx-auto">
+            Together, we can make a difference through the power of prayer.
+          </p>
+          <Link
+            to="/register"
+            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-purple-700 bg-white hover:bg-purple-50"
+          >
+            Get Started Today
+          </Link>
+        </div>
+      </section>
+
+      {/* National Day of Prayer */}
+      <section className="bg-gradient-to-r from-blue-200 to-purple-200 rounded-lg shadow-md py-10 px-6 md:px-12 lg:px-24">
+        <div className="container mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          <div className="text-content space-y-4">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-gray-800">
+              Pray For Nigeria!
+            </h2>
+            <p className="text-gray-700 text-base md:text-lg lg:text-xl">
+              On the 31st of September every year, we hold the National Day of
+              Prayer in Abuja and other states, as a precursor to Nigeria's
+              Independence Day on 1st October.
+            </p>
+            <Link
+              to="/register"
+              className="inline-flex items-center px-6 py-3 border-transparent text-base font-medium rounded-md text-purple-700 bg-white hover:bg-purple-50 border-2 border-purple-200"
+            >
+              Get Started Today
+            </Link>
+          </div>
+          <div className="image-content grid grid-cols-2 gap-4">
+            <div className="rounded-lg overflow-hidden shadow-md">
+              <img
+                src={cgphcImage}
+                alt="Image 1"
+                className="h-full object-cover"
+              />
+            </div>
+            <div className="rounded-lg overflow-hidden shadow-md">
+              <img
+                src={nationalDayImage}
+                alt="Image 2"
+                className="w-full h-auto object-cover"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <Footer />
+      
+    </div>
+  );
+}
