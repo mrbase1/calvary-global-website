@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Calendar } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/useAuth';
 import cgphcImage from '../assets/cgphc-image.jpg';
 import nationalDayImage from '../assets/national-day-of-prayer.jpg';
 import comiImage1 from '../assets/comi-image.jpg';
@@ -16,6 +18,29 @@ import { Footer } from '../components/Footer';
 
 export function Home() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const { user, profile } = useAuth();
+
+  // Add session monitoring
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('=== Homepage Session Check ===');
+      console.log('Active Session:', !!session);
+      console.log('Session Details:', {
+        user: session?.user?.email,
+        role: profile?.role,
+        lastSignInAt: session?.user?.last_sign_in_at,
+        expiresAt: session?.expires_at ? new Date(session.expires_at * 1000).toLocaleString() : 'N/A'
+      });
+      console.log('Current User State:', {
+        isAuthenticated: !!user,
+        email: user?.email,
+        profile: profile
+      });
+    };
+
+    checkSession();
+  }, [user, profile]);
 
   const images = [
     { src: comiImage1, alt: 'Prayer Meeting 1' },

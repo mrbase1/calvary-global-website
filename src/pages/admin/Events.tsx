@@ -1,25 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Users } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Database } from '../../types/supabase';
 import { toast } from 'react-toastify';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { uploadEventImage } from '../../utils/storage';
+
+const eventSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().min(1, 'Description is required'),
+  startTime: z.string().min(1, 'Start time is required'),
+  endTime: z.string().min(1, 'End time is required'),
+  location: z.string().min(1, 'Location is required'),
+  type: z.enum(['in_person', 'online', 'hybrid']),
+  maxAttendees: z
+    .number()
+    .min(0, 'Must be 0 or greater')
+    .nullable(),
+  needsVolunteers: z.boolean(),
+  imageUrl: z.string().nullable(),
+  imageFile: z.any().optional(), // Add this for file upload
+});
+
+type EventFormData = z.infer<typeof eventSchema>;
 
 type Event = Database['public']['Tables']['events']['Row'];
 type EventRegistration = Database['public']['Tables']['event_registrations']['Row'] & {
   profiles: { full_name: string; email: string }
 };
-
-interface EventFormData {
-  title: string;
-  description: string;
-  start_time: string;
-  end_time: string;
-  location: string;
-  type: 'in_person' | 'online' | 'hybrid';
-  max_attendees: number | null;
-  needs_volunteers: boolean;
-  image_url: string | null;
-}
 
 export function AdminEvents() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -27,16 +37,10 @@ export function AdminEvents() {
   const [registrations, setRegistrations] = useState<EventRegistration[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [formData, setFormData] = useState<EventFormData>({
-    title: '',
-    description: '',
-    start_time: '',
-    end_time: '',
-    location: '',
-    type: 'in_person',
-    max_attendees: null,
-    needs_volunteers: false,
-    image_url: null
+  const [submitting, setSubmitting] = useState(false);
+
+  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<EventFormData>({
+    resolver: zodResolver(eventSchema)
   });
 
   useEffect(() => {
@@ -82,30 +86,74 @@ export function AdminEvents() {
     }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
-      const eventData = selectedEvent 
-        ? { ...formData, id: selectedEvent.id }
-        : formData;
+      const file = e.target.files?.[0];
+      if (!file) return;
 
-      const { data, error } = await supabase
-        .from('events')
-        .upsert(eventData)
-        .select()
-        .single();
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please upload an image file');
+        return;
+      }
 
-      if (error) throw error;
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        toast.error('Image must be less than 5MB');
+        return;
+      }
 
-      setEvents(events.map(e => e.id === data.id ? data : e));
-      setShowForm(false);
-      setSelectedEvent(null);
-      toast.success(`Event ${selectedEvent ? 'updated' : 'created'} successfully`);
+      const url = await uploadEventImage(file);
+      setValue('imageUrl', url);
+      toast.success('Image uploaded successfully');
     } catch (error) {
-      console.error('Error saving event:', error);
-      toast.error('Failed to save event');
+      console.error('Error uploading image:', error);
+      toast.error('Failed to upload image');
     }
-  }
+  };
+
+  const onSubmit: SubmitHandler<EventFormData> = async (data) => {
+    try {
+      setSubmitting(true);
+      console.log('Submitting event data:', data);
+
+      // Check auth status before submitting
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('You must be logged in to create events');
+      }
+
+      const { error } = await supabase
+        .from('events')
+        .insert({
+          title: data.title,
+          description: data.description,
+          start_time: data.startTime,
+          end_time: data.endTime,
+          location: data.location,
+          type: data.type,
+          max_attendees: data.maxAttendees || null,
+          needs_volunteers: data.needsVolunteers,
+          image_url: data.imageUrl || null,
+        });
+
+      if (error) {
+        console.error('Supabase error:', error);
+        if (error.code === '42501') {
+          throw new Error('You do not have permission to create events');
+        }
+        throw error;
+      }
+
+      toast.success('Event saved successfully');
+      setShowForm(false);
+      fetchEvents();
+    } catch (error) {
+      console.error('Submission error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to save event');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   async function handleDelete(eventId: string) {
     if (!confirm('Are you sure you want to delete this event?')) return;
@@ -153,17 +201,6 @@ export function AdminEvents() {
         <button
           onClick={() => {
             setSelectedEvent(null);
-            setFormData({
-              title: '',
-              description: '',
-              start_time: '',
-              end_time: '',
-              location: '',
-              type: 'in_person',
-              max_attendees: null,
-              needs_volunteers: false,
-              image_url: null
-            });
             setShowForm(true);
           }}
           className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 flex items-center"
@@ -209,7 +246,6 @@ export function AdminEvents() {
                     <button
                       onClick={() => {
                         setSelectedEvent(event);
-                        setFormData(event);
                         setShowForm(true);
                       }}
                       className="text-blue-600 hover:text-blue-700"
@@ -237,27 +273,28 @@ export function AdminEvents() {
             <h2 className="text-xl font-semibold mb-4">
               {selectedEvent ? 'Edit Event' : 'New Event'}
             </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="space-y-4"
+            >
               <div>
                 <label className="block text-sm font-medium text-gray-700">Title</label>
                 <input
                   type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  {...register('title')}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                  required
                 />
+                {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700">Description</label>
                 <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  {...register('description')}
                   rows={3}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                  required
                 />
+                {errors.description && <p className="text-red-500 text-sm">{errors.description.message}</p>}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -265,22 +302,20 @@ export function AdminEvents() {
                   <label className="block text-sm font-medium text-gray-700">Start Time</label>
                   <input
                     type="datetime-local"
-                    value={formData.start_time}
-                    onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                    {...register('startTime')}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                    required
                   />
+                  {errors.startTime && <p className="text-red-500 text-sm">{errors.startTime.message}</p>}
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700">End Time</label>
                   <input
                     type="datetime-local"
-                    value={formData.end_time}
-                    onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
+                    {...register('endTime')}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                    required
                   />
+                  {errors.endTime && <p className="text-red-500 text-sm">{errors.endTime.message}</p>}
                 </div>
               </div>
 
@@ -288,44 +323,87 @@ export function AdminEvents() {
                 <label className="block text-sm font-medium text-gray-700">Location</label>
                 <input
                   type="text"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  {...register('location')}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                  required
                 />
+                {errors.location && <p className="text-red-500 text-sm">{errors.location.message}</p>}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">Event Type</label>
                 <select
-                  value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value as Event['type'] })}
+                  {...register('type')}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
                 >
                   <option value="in_person">In Person</option>
                   <option value="online">Online</option>
                   <option value="hybrid">Hybrid</option>
                 </select>
+                {errors.type && <p className="text-red-500 text-sm">{errors.type.message}</p>}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">Maximum Attendees</label>
                 <input
                   type="number"
-                  value={formData.max_attendees || ''}
-                  onChange={(e) => setFormData({ ...formData, max_attendees: parseInt(e.target.value) || null })}
+                  min="0"
+                  {...register('maxAttendees', {
+                    setValueAs: (value: string) => (value === '' ? null : parseInt(value, 10))
+                  })}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
                 />
+                {errors.maxAttendees && <p className="text-red-500 text-sm">{errors.maxAttendees.message}</p>}
               </div>
 
               <div className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={formData.needs_volunteers}
-                  onChange={(e) => setFormData({ ...formData, needs_volunteers: e.target.checked })}
+                  {...register('needsVolunteers')}
                   className="rounded text-purple-600 focus:ring-purple-500"
                 />
                 <label className="ml-2 text-sm text-gray-700">Needs Volunteers</label>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Event Image</label>
+                <div className="mt-1 flex items-center space-x-4">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="event-image"
+                  />
+                  <label
+                    htmlFor="event-image"
+                    className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    Choose Image
+                  </label>
+                  <input
+                    type="hidden"
+                    {...register('imageUrl')}
+                  />
+                  {watch('imageUrl') && (
+                    <div className="relative w-20 h-20">
+                      <img
+                        src={watch('imageUrl') || undefined}
+                        alt="Event preview"
+                        className="w-full h-full object-cover rounded-md"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setValue('imageUrl', null)}
+                        className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
+                </div>
+                {errors.imageUrl && (
+                  <p className="mt-1 text-sm text-red-500">{errors.imageUrl.message}</p>
+                )}
               </div>
 
               <div className="flex justify-end space-x-3 pt-4">
@@ -339,6 +417,7 @@ export function AdminEvents() {
                 <button
                   type="submit"
                   className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                  disabled={submitting}
                 >
                   {selectedEvent ? 'Update' : 'Create'} Event
                 </button>

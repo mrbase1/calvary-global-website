@@ -1,6 +1,6 @@
-import React from 'react';
+// import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/useAuth';
 
 export function AdminRoute() {
   const { user, profile, loading } = useAuth();

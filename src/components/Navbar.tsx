@@ -25,10 +25,20 @@ export function Navbar() {
   React.useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      console.log('Current Session:', session);
-      console.log('Auth State:', { user, profile });
+      console.log('=== Session Status ===');
+      console.log('Active Session:', !!session);
+      console.log('Session Details:', {
+        user: session?.user?.email,
+        role: profile?.role,
+        lastSignInAt: session?.user?.last_sign_in_at,
+        expiresAt: session?.expires_at ? new Date(session.expires_at * 1000).toLocaleString() : 'N/A'
+      });
+      console.log('Current User State:', {
+        isAuthenticated: !!user,
+        email: user?.email,
+        profile: profile
+      });
       
-      // If no session but we have user state, force clear
       if (!session && user) {
         signOut();
       }

@@ -13,26 +13,82 @@ export function Events() {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchEvents();
-  }, []);
-
   const fetchEvents = async () => {
+    const timeout = new Promise<never>((_, reject) => 
+      setTimeout(() => reject(new Error('Query timeout after 10s')), 10000)
+    );
+
     try {
-      const { data, error } = await supabase
+      setLoading(true);
+      console.log('[Events] Step 1: Starting fetch...'); 
+
+      const queryPromise = supabase
         .from('events')
         .select('*')
+        .gte('end_time', new Date().toISOString())
         .order('start_time', { ascending: true });
 
-      if (error) throw error;
+      console.log('[Events] Step 2: Querying events...'); 
+
+      // Properly type the race result
+      const result = await Promise.race([queryPromise, timeout]);
+      const { data, error } = result as Awaited<typeof queryPromise>;
+
+      console.log('[Events] Step 3: Query complete', {
+        hasData: !!data,
+        dataLength: data?.length,
+        hasError: !!error,
+        timestamp: new Date().toISOString()
+      });
+
+      if (error) {
+        console.error('[Events] Query error:', error);
+        throw error;
+      }
+
+      console.log('[Events] Step 4: Setting state with', data?.length, 'events');
       setEvents(data || []);
+      
     } catch (error) {
-      console.error('Error fetching events:', error);
-      toast.error('Failed to load events');
+      console.error('[Events] Error in fetchEvents:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        timestamp: new Date().toISOString()
+      });
+      toast.error(error instanceof Error ? error.message : 'Failed to load events');
     } finally {
+      console.log('[Events] Step 5: Completing fetch');
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    let mounted = true;
+    const controller = new AbortController();
+
+    console.log('[Events] Component mounted');
+    
+    const loadEvents = async () => {
+      try {
+        if (mounted) {
+          await fetchEvents();
+        }
+      } catch (error) {
+        if (mounted) {
+          console.error('[Events] Load error:', error);
+        }
+      }
+    };
+
+    loadEvents();
+
+    return () => {
+      mounted = false;
+      controller.abort();
+      console.log('[Events] Component unmounting');
+    };
+  }, []);
 
   const getEventTypeIcon = (type: Event['type']) => {
     switch (type) {
