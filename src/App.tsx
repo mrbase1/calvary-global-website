@@ -25,6 +25,7 @@ import { BlogPost } from './pages/BlogPost';
 import { AdminBlog } from './pages/admin/Blog';
 import { BlogEditor } from './pages/admin/BlogEditor';
 import { AdminRoute } from './components/AdminRoute';
+import { Legal } from './pages/Legal';
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/prayer-requests" element={<PrayerRequests />} />
               <Route path="/events" element={<Events />} />
+              <Route path="/legal" element={<Legal />} />
               <Route path="/register/:id" element={<EventRegistration />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />

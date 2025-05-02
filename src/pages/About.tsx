@@ -7,6 +7,8 @@ import eventFlyer2 from '../assets/event-flyer-2.jpg';
 import eventFlyer3 from '../assets/event-flyer-3.jpg';
 import eventFlyer4 from '../assets/event-flyer-4.jpg';
 import revKeenamImage from '../assets/rev-keenam-us-flag.jpg';
+import { ChevronRight, Target, Crosshair, Focus } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export function About() {
     const [selectedEventImage, setSelectedEventImage] = useState<string | null>(null);
@@ -53,6 +55,184 @@ export function About() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Strategic Goals Section */}
+      <section className="py-20 relative overflow-hidden">
+        <div 
+          className="absolute inset-0 bg-gradient-to-br from-purple-50 to-indigo-50"
+          style={{
+            clipPath: 'polygon(0 0, 100% 5%, 100% 100%, 0 95%)'
+          }}
+        />
+        <motion.div 
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative"
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+        >
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-16">
+            Strategic Goals
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {[
+              {
+                title: 'Prayer Leadership & Support',
+                items: [
+                  'Serve, strengthen and encourage intercessors and prayer leaders to prayer for their pastors, communities, City and Nation',
+                  'Recruit intercessors to pray in their local government City Hall for God\'s wisdom and guidance',
+                  'Provide up-to-the-minute information to prayer warriors concerning prayer worldwide',
+                  'Encourage and equip prayer leaders to become spiritual "terrorists" against all works of the devil'
+                ]
+              },
+              {
+                title: 'Network & Training',
+                items: [
+                  'Expand networking to increase prayer leaders praying for city, state, Africa and global transformation',
+                  'Provide intercessory instruction through annual prophetic school of prayer and intercession',
+                  'Maintain sophisticated website for prayer movement in Africa, USA and other Nations',
+                  'Implement creative momentum training to stimulate the prayer movement'
+                ]
+              },
+              {
+                title: 'City Transformation',
+                items: [
+                  'Saturate the city with prayer for revival and completion of the great commission',
+                  'Monitor progress and publicize ongoing works of God in our city',
+                  'Support local government through targeted prayer initiatives',
+                  'Foster unity among city churches through collective prayer efforts'
+                ]
+              }
+            ].map((goal, index) => (
+              <motion.div
+                key={index}
+                className="bg-white rounded-xl shadow-xl p-8 hover:shadow-2xl transition-shadow duration-300"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.2 }}
+              >
+                <h3 className="text-xl font-semibold text-gray-900 mb-6">{goal.title}</h3>
+                <ul className="space-y-4">
+                  {goal.items.map((item, i) => (
+                    <li key={i} className="flex items-start text-gray-600">
+                      <ChevronRight className="h-5 w-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                      <span className="ml-2">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Objectives Section */}
+      <section className="py-20 bg-gradient-to-b from-white to-purple-50">
+        <motion.div 
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1 }}
+        >
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-16">
+            Our Objectives
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            {[
+              {
+                icon: <Target className="h-8 w-8" />,
+                title: 'Immediate Focus',
+                items: [
+                  'Cover our city, state and nation with strong focused intercession',
+                  'Wage spiritual war on behalf of Africa and America, tearing down Satan\'s strongholds',
+                  'Network with churches throughout Africa and America to raise up intercessors',
+                  'Be a strength to local churches',
+                  'Establish a 24/7 prayer Helpline with trained, anointed volunteer prayer ministers'
+                ]
+              },
+              {
+                icon: <Crosshair className="h-8 w-8" />,
+                title: 'Long-term Vision',
+                items: [
+                  'Discover and pursue God\'s divine Will for our generation',
+                  'Release waves of salvation, healing and deliverance in Jesus\' Name',
+                  'Spiritually shake Nations and the world for Jesus',
+                  'Partner with ministries for education and healthcare initiatives',
+                  'Establish clean water projects and schools while building global relationships'
+                ]
+              }
+            ].map((objective, index) => (
+              <motion.div
+                key={index}
+                className="relative group"
+                initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.3 }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-2xl transform -rotate-1 group-hover:rotate-1 transition-transform" />
+                <div className="relative bg-white rounded-2xl p-8 shadow-lg">
+                  <div className="text-purple-500 mb-6">{objective.icon}</div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-6">
+                    {objective.title}
+                  </h3>
+                  <ul className="space-y-4">
+                    {objective.items.map((item, i) => (
+                      <li key={i} className="flex items-start text-gray-600">
+                        <div className="h-2 w-2 bg-purple-500 rounded-full mr-3 mt-2" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Focus Areas Section */}
+      <section className="py-20 relative overflow-hidden bg-gradient-to-br from-gray-900 to-purple-900 text-white">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23fff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+          }} />
+        </div>
+        <motion.div 
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+        >
+          <h2 className="text-3xl font-bold text-center mb-16">
+            Focus Areas
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              { title: 'Prayer Mobilization', description: 'Organizing and coordinating global prayer initiatives' },
+              { title: 'Leadership Development', description: 'Training and equipping prayer leaders worldwide' },
+              { title: 'Community Transformation', description: 'Impacting communities through targeted prayer programs' },
+              { title: 'Resource Creation', description: 'Developing comprehensive prayer and training materials' }
+            ].map((focus, index) => (
+              <motion.div
+                key={index}
+                className="bg-white/10 backdrop-blur-sm rounded-xl p-6 hover:bg-white/20 transition-colors duration-300"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Focus className="h-8 w-8 text-purple-300 mb-4" />
+                <h3 className="text-xl font-semibold mb-3">{focus.title}</h3>
+                <p className="text-purple-100">{focus.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
       </section>
 
       {/* Core Values */}

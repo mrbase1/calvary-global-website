@@ -1,8 +1,9 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, Globe, Heart, LogOut, User, Info, Calendar, Settings } from 'lucide-react';
+import { Menu, X, Globe, Heart, LogOut, User, Info, Calendar, Settings, Scale } from 'lucide-react';
 import { useAuth } from '../contexts/useAuth';
 import { supabase } from '../lib/supabase';
+
 
 
 export function Navbar() {
@@ -86,6 +87,24 @@ export function Navbar() {
             >
               <Calendar className="h-5 w-5 mr-1" />
               Events
+            </Link>
+            <Link
+              to="/prayer-requests"
+              className={`flex items-center text-gray-700 hover:text-purple-600 ${
+                isActive('/prayer-requests') ? 'text-purple-600' : ''
+              }`}
+            >
+              <Heart className="h-5 w-5 mr-1" />
+              Prayer Requests
+            </Link>
+            <Link
+              to="/legal"
+              className={`flex items-center text-gray-700 hover:text-purple-600 ${
+                isActive('/events') ? 'text-purple-600' : ''
+              }`}
+            >
+              <Scale className="h-5 w-5 mr-1" />
+              Legal
             </Link>
             <Link
               to="/prayer-requests"
