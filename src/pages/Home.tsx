@@ -32,7 +32,7 @@ export function Home() {
 
   const [featuredEvents, setFeaturedEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [isRegistering, setIsRegistering] = useState(false);
+  // Removed unused isRegistering state
 
   const handleEventClick = (e: React.MouseEvent, event: Event) => {
     e.preventDefault();
@@ -375,7 +375,6 @@ export function Home() {
                 </button>
                 {user && (
                   <button
-                    onClick={() => setIsRegistering(true)}
                     className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
                   >
                     Register
@@ -391,7 +390,7 @@ export function Home() {
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
-            54th World Conference in USA
+            <span className="text-gray-400"> Event Highlights:</span> 54th World Conference in USA
           </h2>
           <h4 className='text-center text-gray-600 mb-8'>
             View Photos from the
