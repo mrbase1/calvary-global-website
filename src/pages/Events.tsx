@@ -5,6 +5,7 @@ import { Footer } from '../components/Footer';
 import { supabase } from '../lib/supabase';
 import { Database } from '../types/supabase';
 import { toast } from 'react-toastify';
+import { useAuth } from '../contexts/useAuth';
 
 type Event = Database['public']['Tables']['events']['Row'];
 
@@ -12,72 +13,64 @@ export function Events() {
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   const fetchEvents = async () => {
-    const timeout = new Promise<never>((_, reject) => 
-      setTimeout(() => reject(new Error('Query timeout after 10s')), 10000)
-    );
-
     try {
       setLoading(true);
-      console.log('[Events] Step 1: Starting fetch...'); 
+      console.log('[Events] Starting fetch...', { isAuthenticated: !!user }); 
 
-      const queryPromise = supabase
+      // Try public fetch first
+      let { data, error } = await supabase
         .from('events')
         .select('*')
         .gte('end_time', new Date().toISOString())
         .order('start_time', { ascending: true });
 
-      console.log('[Events] Step 2: Querying events...'); 
-
-      // Properly type the race result
-      const result = await Promise.race([queryPromise, timeout]);
-      const { data, error } = result as Awaited<typeof queryPromise>;
-
-      console.log('[Events] Step 3: Query complete', {
-        hasData: !!data,
-        dataLength: data?.length,
-        hasError: !!error,
-        timestamp: new Date().toISOString()
-      });
+      if (error) {
+        console.error('[Events] Initial query error:', error);
+        
+        // If initial query fails, try with anon key
+        const { error: anonError } = await supabase.auth.setSession({ access_token: '', refresh_token: '' });
+        
+        if (!anonError) {
+          ({ data, error } = await supabase
+            .from('events')
+            .select('*')
+            .gte('end_time', new Date().toISOString())
+            .order('start_time', { ascending: true }));
+        }
+      }
 
       if (error) {
-        console.error('[Events] Query error:', error);
+        console.error('[Events] Final query error:', error);
         throw error;
       }
 
-      console.log('[Events] Step 4: Setting state with', data?.length, 'events');
-      setEvents(data || []);
-      
-    } catch (error) {
-      console.error('[Events] Error in fetchEvents:', {
-        name: error instanceof Error ? error.name : 'Unknown',
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined,
-        timestamp: new Date().toISOString()
+      console.log('[Events] Fetch successful:', {
+        count: data?.length,
+        authState: user ? 'authenticated' : 'public',
+        dates: data?.map(e => ({
+          title: e.title,
+          date: new Date(e.start_time).toLocaleDateString()
+        }))
       });
-      toast.error(error instanceof Error ? error.message : 'Failed to load events');
+
+      setEvents(data || []);
+    } catch (error) {
+      console.error('[Events] Error:', error);
+      toast.error('Unable to load events. Please try again later.');
     } finally {
-      console.log('[Events] Step 5: Completing fetch');
       setLoading(false);
     }
   };
 
   useEffect(() => {
     let mounted = true;
-    const controller = new AbortController();
 
-    console.log('[Events] Component mounted');
-    
     const loadEvents = async () => {
-      try {
-        if (mounted) {
-          await fetchEvents();
-        }
-      } catch (error) {
-        if (mounted) {
-          console.error('[Events] Load error:', error);
-        }
+      if (mounted) {
+        await fetchEvents();
       }
     };
 
@@ -85,8 +78,6 @@ export function Events() {
 
     return () => {
       mounted = false;
-      controller.abort();
-      console.log('[Events] Component unmounting');
     };
   }, []);
 
@@ -177,27 +168,25 @@ export function Events() {
 
       {/* Event Details Modal */}
       {selectedEvent && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
-          onClick={() => setSelectedEvent(null)}
-        >
-          <div
-            className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="relative">
-              <img
-                src={selectedEvent.image_url || 'default-event-image.jpg'}
-                alt={selectedEvent.title}
-                className="w-full h-64 object-cover"
-              />
-              <button
-                onClick={() => setSelectedEvent(null)}
-                className="absolute top-4 right-4 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg max-w-4xl w-full overflow-hidden">
+          <div className="relative">
+            {selectedEvent.image_url && (
+              <div className="w-full h-[400px] flex items-center justify-center bg-gray-100">
+                <img
+                  src={selectedEvent.image_url}
+                  alt={selectedEvent.title}
+                  className="max-w-full max-h-full object-contain"
+                />
+              </div>
+            )}
+            <button
+              onClick={() => setSelectedEvent(null)}
+              className="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-gray-100 shadow-md"
+            >
+              <X className="h-5 w-5 text-gray-600" />
+            </button>
+          </div>
             <div className="p-6 space-y-6">
               <h2 className="text-2xl font-bold text-gray-900">
                 {selectedEvent.title}

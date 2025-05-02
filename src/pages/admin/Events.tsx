@@ -38,6 +38,7 @@ export function AdminEvents() {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [featuredEvents, setFeaturedEvents] = useState<string[]>([]);
 
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<EventFormData>({
     resolver: zodResolver(eventSchema)
@@ -45,6 +46,7 @@ export function AdminEvents() {
 
   useEffect(() => {
     fetchEvents();
+    fetchFeaturedEvents();
   }, []);
 
   async function fetchEvents() {
@@ -62,6 +64,19 @@ export function AdminEvents() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function fetchFeaturedEvents() {
+    const { data, error } = await supabase
+      .from('featured_events')
+      .select('event_id');
+    
+    if (error) {
+      console.error('Error fetching featured events:', error);
+      return;
+    }
+    
+    setFeaturedEvents(data.map(fe => fe.event_id));
   }
 
   async function fetchRegistrations(eventId: string) {
@@ -174,6 +189,38 @@ export function AdminEvents() {
     }
   }
 
+  async function toggleFeatured(eventId: string) {
+    try {
+      const isFeatured = featuredEvents.includes(eventId);
+      
+      if (isFeatured) {
+        // Remove from featured
+        const { error } = await supabase
+          .from('featured_events')
+          .delete()
+          .eq('event_id', eventId);
+          
+        if (error) throw error;
+      } else {
+        // Add to featured
+        const { error } = await supabase
+          .from('featured_events')
+          .insert({ 
+            event_id: eventId,
+            created_by: null // Replace with actual user ID if available
+          });
+          
+        if (error) throw error;
+      }
+      
+      await fetchFeaturedEvents();
+      toast.success(isFeatured ? 'Event removed from featured' : 'Event added to featured');
+    } catch (error) {
+      console.error('Error toggling featured status:', error);
+      toast.error('Failed to update featured status');
+    }
+  }
+
   async function updateRegistrationStatus(id: string, status: 'pending' | 'confirmed' | 'cancelled') {
     try {
       const { error } = await supabase
@@ -257,6 +304,16 @@ export function AdminEvents() {
                       className="text-red-600 hover:text-red-700"
                     >
                       <Trash2 className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => toggleFeatured(event.id)}
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        featuredEvents.includes(event.id)
+                          ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+                          : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                      }`}
+                    >
+                      {featuredEvents.includes(event.id) ? 'Featured' : 'Feature'}
                     </button>
                   </div>
                 </div>
