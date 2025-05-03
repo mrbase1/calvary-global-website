@@ -16,6 +16,7 @@ import heroImage from '../assets/rev-keenam-4.jpg';
 import dropPrayerImage from '../assets/drop-prayer-requests.jpg';
 import { Footer } from '../components/Footer';
 
+
 export function Home() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const { user, profile } = useAuth();
@@ -29,6 +30,8 @@ export function Home() {
     location?: string;
     max_attendees?: number;
   }
+
+  
 
   const [featuredEvents, setFeaturedEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -106,7 +109,7 @@ export function Home() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
           <div className="text-center w-full">
             <h1 className="text-4xl font-extrabold text-white sm:text-5xl md:text-6xl">
-              Welcome to Calvary Global
+              Welcome to <span className='text-purple-400'>Calvary Global Prayer & Healing Centre</span>
             </h1>
             <p className="mt-3 max-w-md mx-auto text-base text-gray-100 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
               Join our community in prayer, worship, and fellowship
@@ -454,6 +457,40 @@ export function Home() {
           </Link>
         </div>
       </section>
+
+      {/* Donations Section */}
+<section className="py-20 bg-gradient-to-r from-purple-50 to-indigo-50">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="text-center mb-12">
+      <h2 className="text-3xl font-bold text-gray-900 mb-4">
+        Partner With Us
+      </h2>
+      <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+        Support our mission to establish prayer networks and promote peace across nations. 
+        Your generous donation will help us achieve our <Link to="/about" className="text-purple-600 hover:text-purple-800">strategic goals</Link>.
+      </p>
+    </div>
+    
+    <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 max-w-4xl mx-auto">
+      <div className="prose prose-purple max-w-none mb-8">
+        <p className="text-gray-600 text-center">
+          As the Spirit leads you, partner with us in this divine mandate through your generous donations. 
+          Every contribution helps us extend our reach and impact more lives through prayer.
+        </p>
+      </div>
+      
+      <div className="flex justify-center">
+        <Link
+          to="/donate"
+          className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 transition-colors"
+        >
+          Make a Donation
+          <Heart className="ml-2 -mr-1 h-5 w-5" />
+        </Link>
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* National Day of Prayer */}
       <section className="bg-gradient-to-r from-blue-200 to-purple-200 rounded-lg shadow-md py-10 px-6 md:px-12 lg:px-24">

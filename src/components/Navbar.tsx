@@ -4,8 +4,6 @@ import { Menu, X, Globe, Heart, LogOut, User, Info, Calendar, Settings, Scale } 
 import { useAuth } from '../contexts/useAuth';
 import { supabase } from '../lib/supabase';
 
-
-
 export function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
   const { user, signOut, profile } = useAuth();
@@ -59,20 +57,23 @@ export function Navbar() {
 
   return (
     <nav className="bg-white shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
-            <Link to="/" className="flex-shrink-0 flex items-center space-x-2">
-              <Globe className="h-8 w-8 text-purple-600" />
-              <span className="text-xl font-bold text-gray-900">Calvary Global</span>
+      <div className="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-20">
+          {/* Logo and Title Section */}
+          <div className="flex-shrink-0 flex items-center max-w-[40%] lg:max-w-[50%]">
+            <Link to="/" className="flex items-center space-x-3">
+              <Globe className="h-8 w-8 text-purple-600 flex-shrink-0" />
+              <span className="text-lg sm:text-xl font-bold text-gray-900 truncate">
+                Calvary Global Prayer & Healing Center
+              </span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex md:items-center md:space-x-8">
+          <div className="hidden md:flex md:items-center md:space-x-4 lg:space-x-6 ml-4 lg:ml-8">
             <Link
               to="/about"
-              className={`flex items-center text-gray-700 hover:text-purple-600 ${
+              className={`flex items-center text-gray-700 hover:text-purple-600 whitespace-nowrap ${
                 isActive('/about') ? 'text-purple-600' : ''
               }`}
             >
@@ -81,7 +82,7 @@ export function Navbar() {
             </Link>
             <Link
               to="/events"
-              className={`flex items-center text-gray-700 hover:text-purple-600 ${
+              className={`flex items-center text-gray-700 hover:text-purple-600 whitespace-nowrap ${
                 isActive('/events') ? 'text-purple-600' : ''
               }`}
             >
@@ -90,7 +91,7 @@ export function Navbar() {
             </Link>
             <Link
               to="/prayer-requests"
-              className={`flex items-center text-gray-700 hover:text-purple-600 ${
+              className={`flex items-center text-gray-700 hover:text-purple-600 whitespace-nowrap ${
                 isActive('/prayer-requests') ? 'text-purple-600' : ''
               }`}
             >
@@ -99,21 +100,12 @@ export function Navbar() {
             </Link>
             <Link
               to="/legal"
-              className={`flex items-center text-gray-700 hover:text-purple-600 ${
-                isActive('/events') ? 'text-purple-600' : ''
+              className={`flex items-center text-gray-700 hover:text-purple-600 whitespace-nowrap ${
+                isActive('/legal') ? 'text-purple-600' : ''
               }`}
             >
               <Scale className="h-5 w-5 mr-1" />
               Legal
-            </Link>
-            <Link
-              to="/prayer-requests"
-              className={`flex items-center text-gray-700 hover:text-purple-600 ${
-                isActive('/prayer-requests') ? 'text-purple-600' : ''
-              }`}
-            >
-              <Heart className="h-5 w-5 mr-1" />
-              Prayer Requests
             </Link>
             {user ? (
               <>
