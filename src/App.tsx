@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -27,6 +27,13 @@ import { BlogEditor } from './pages/admin/BlogEditor';
 import { AdminRoute } from './components/AdminRoute';
 import { Legal } from './pages/Legal';
 import { Donate } from './pages/Donate';
+import { Shop } from './pages/Shop';
+import { AdminShopManagement } from './pages/admin/ShopManagement';
+import { Cart } from './pages/Cart';
+import { Checkout } from './pages/Checkout';
+import { Orders } from './pages/Orders'; // Ensure the file exists at './pages/Orders.tsx' or correct the path if necessary.
+import { AdminOrders } from './pages/admin/Orders';
+import { ProductDetails } from './pages/ProductDetails';
 
 function App() {
   return (
@@ -47,6 +54,11 @@ function App() {
               <Route path="/register/:id" element={<EventRegistration />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
+              <Route path="/shop" element={<Shop />} />
+              <Route path="/shop/:id" element={<ProductDetails />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/orders" element={<Orders />} />
               
               {/* Protect all admin routes */}
               <Route element={<AdminRoute />}>
@@ -61,6 +73,8 @@ function App() {
                   <Route path="blog" element={<AdminBlog />} />
                   <Route path="blog/new" element={<BlogEditor />} />
                   <Route path="blog/edit/:id" element={<BlogEditor />} />
+                  <Route path="shop" element={<AdminShopManagement />} />
+                  <Route path="orders/*" element={<AdminOrders />} />
                 </Route>
               </Route>
             </Routes>

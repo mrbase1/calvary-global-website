@@ -1,3 +1,39 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Add this to your existing CSS */
+.slick-prev,
+.slick-next {
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+}
+
+.slick-prev {
+  left: 20px;
+}
+
+.slick-next {
+  right: 20px;
+}
+
+.slick-prev:before,
+.slick-next:before {
+  font-size: 40px;
+  color: #7c3aed;
+  opacity: 0.75;
+}
+
+.slick-dots {
+  bottom: -40px;
+}
+
+.slick-dots li button:before {
+  color: #7c3aed;
+}
+
+.slick-dots li.slick-active button:before {
+  color: #7c3aed;
+  opacity: 1;
+}

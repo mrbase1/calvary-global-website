@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
+import { useSettings } from '../../stores/settingsStore';
 
 export function AdminSettings() {
   const [emailSettings, setEmailSettings] = useState({
@@ -14,13 +15,28 @@ export function AdminSettings() {
     maxPrayerRequestsPerUser: 5
   });
 
-  const handleSave = () => {
-    // Implement settings save logic here
-    toast.success('Settings saved successfully');
+  const { settings, updateSettings } = useSettings();
+
+  const handleSave = async () => {
+    try {
+      await updateSettings(settings);
+      toast.success('Settings saved successfully');
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      toast.error('Failed to save settings');
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    updateSettings({
+      ...settings,
+      [name]: value
+    });
   };
 
   return (
-    <div>
+    <div className="space-y-6 p-6">
       <h1 className="text-2xl font-bold mb-8">System Settings</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -109,6 +125,36 @@ export function AdminSettings() {
                 className="rounded text-purple-600 focus:ring-purple-500"
               />
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-medium mb-4">Payment Settings</h3>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Paystack Public Key
+            </label>
+            <input
+              type="text"
+              name="paystackPublicKey"
+              value={settings.paystackPublicKey}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Paystack Secret Key
+            </label>
+            <input
+              type="password"
+              name="paystackSecretKey"
+              value={settings.paystackSecretKey}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+            />
           </div>
         </div>
       </div>

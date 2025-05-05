@@ -9,9 +9,41 @@ import { EventRegistrationModal } from '../components/EventRegistrationModal';
 import type { Database } from '../types/supabase';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
-type PrayerRequest = Database['public']['Tables']['prayer_requests']['Row'];
+type PrayerRequest = Database['public']['Tables']['prayer_requests']['Row'] & {
+  completion_message?: string; };
 type Event = Database['public']['Tables']['events']['Row'];
 type EventRegistration = Database['public']['Tables']['event_registrations']['Row'];
+
+const CompletionMessageModal: React.FC<{
+  request: PrayerRequest | null;
+  onClose: () => void;
+}> = ({ request, onClose }) => {
+  if (!request) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg max-w-lg w-full p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Prayer Team's Response</h3>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <p className="text-gray-600 whitespace-pre-wrap">
+          {request.completion_message || 'No message provided.'}
+        </p>
+        <div className="mt-6 text-right">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export function Dashboard() {
   const { user } = useAuth();
@@ -20,6 +52,7 @@ export function Dashboard() {
   const [events, setEvents] = useState<Event[]>([]);
   const [registrations, setRegistrations] = useState<EventRegistration[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [selectedPrayerRequest, setSelectedPrayerRequest] = useState<PrayerRequest | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -276,12 +309,22 @@ export function Dashboard() {
                           <h3 className="text-lg font-medium text-gray-900">{request.title}</h3>
                           <p className="mt-1 text-sm text-gray-600">{request.description}</p>
                         </div>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
-                          ${request.status === 'completed' ? 'bg-green-100 text-green-800' :
-                            request.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                              'bg-yellow-100 text-yellow-800'}`}>
-                          {request.status.replace('_', ' ')}
-                        </span>
+                        <div className="flex items-center space-x-2">
+                          {request.status === 'completed' && request.completion_message && (
+                            <button
+                              onClick={() => setSelectedPrayerRequest(request)}
+                              className="px-2 py-1 text-xs font-medium text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-md"
+                            >
+                              View Message
+                            </button>
+                          )}
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
+                            ${request.status === 'completed' ? 'bg-green-100 text-green-800' :
+                              request.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                                'bg-yellow-100 text-yellow-800'}`}>
+                            {request.status.replace('_', ' ')}
+                          </span>
+                        </div>
                       </div>
                       <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500">
                         <span>{new Date(request.created_at).toLocaleDateString()}</span>
@@ -310,6 +353,13 @@ export function Dashboard() {
           onRegister={handleEventRegistration}
           isRegistered={isRegisteredForEvent(selectedEvent.id)}
           isVolunteering={isVolunteeringForEvent(selectedEvent.id)}
+        />
+      )}
+
+      {selectedPrayerRequest && (
+        <CompletionMessageModal
+          request={selectedPrayerRequest}
+          onClose={() => setSelectedPrayerRequest(null)}
         />
       )}
     </div>

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, Calendar, Clock, MapPin, Users, X } from 'lucide-react';
+import { Heart, Calendar, Clock, MapPin, Users, X, ShoppingBag } from 'lucide-react';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/useAuth';
 import cgphcImage from '../assets/cgphc-image.jpg';
@@ -16,12 +19,11 @@ import heroImage from '../assets/rev-keenam-4.jpg';
 import dropPrayerImage from '../assets/drop-prayer-requests.jpg';
 import { Footer } from '../components/Footer';
 
-
 export function Home() {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  // Removed unused selectedImage state
   const { user, profile } = useAuth();
   interface Event {
-    id: string; // Add the 'id' property to the Event type
+    id: string;
     title: string;
     description: string;
     start_time: string;
@@ -31,18 +33,23 @@ export function Home() {
     max_attendees?: number;
   }
 
-  
+  interface Product {
+    id: string;
+    name: string;
+    price: number;
+    image_url: string;
+    is_featured: boolean;
+  }
 
   const [featuredEvents, setFeaturedEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  // Removed unused isRegistering state
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
 
   const handleEventClick = (e: React.MouseEvent, event: Event) => {
     e.preventDefault();
     setSelectedEvent(event);
   };
 
-  // Add session monitoring
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -85,6 +92,25 @@ export function Home() {
     fetchFeaturedEvents();
   }, []);
 
+  useEffect(() => {
+    const fetchFeaturedProducts = async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('is_featured', true)
+        .limit(4);
+
+      if (error) {
+        console.error('Error fetching featured products:', error);
+        return;
+      }
+
+      setFeaturedProducts(data || []);
+    };
+
+    fetchFeaturedProducts();
+  }, []);
+
   const images = [
     { src: comiImage1, alt: 'Prayer Meeting 1' },
     { src: comiImage2, alt: 'Prayer Meeting 2' },
@@ -95,6 +121,41 @@ export function Home() {
     { src: comiImage7, alt: 'Prayer Meeting 7' },
   ];
 
+  const carouselSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 3000,
+    pauseOnHover: true,
+    adaptiveHeight: true, // Add this to adjust height automatically
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        }
+      }
+    ]
+  };
+
+  function setSelectedImage(src: string): void {
+    const imageElement = new Image();
+    imageElement.src = src;
+    imageElement.onload = () => {
+      const imageWindow = window.open("", "_blank");
+      if (imageWindow) {
+        imageWindow.document.write(`<img src="${src}" style="max-width:100%; height:auto;" />`);
+        imageWindow.document.title = "Image Preview";
+      }
+    };
+    imageElement.onerror = () => {
+      console.error("Failed to load image:", src);
+    };
+  }
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
@@ -389,108 +450,135 @@ export function Home() {
         </div>
       )}
 
-      {/* Image Gallery */}
+      {/* Image Carousel */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
-            <span className="text-gray-400"> Event Highlights:</span> 54th World Conference in USA
+            <span className="text-gray-400">Event Highlights:</span> 54th World Conference in USA
           </h2>
           <h4 className='text-center text-gray-600 mb-8'>
-            View Photos from the
-            54th World Conference held in the United States held in January this year.
+            View Photos from the 54th World Conference held in the United States held in January this year.
           </h4>
-          <h5 className='text-center text-gray-400'>click pics to enlarge</h5>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {images.map((image, index) => (
-              <div 
-                key={index} 
-                className="cursor-pointer transform transition-transform hover:scale-105"
-                onClick={() => setSelectedImage(image.src)}
-              >
-                <img
-                  src={image.src}
-                  alt={image.alt}
-                  className="w-full h-64 object-cover rounded-lg shadow-md"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Lightbox */}
-        {selectedImage && (
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
-            onClick={() => setSelectedImage(null)}
-          >
-            <div className="relative max-w-4xl max-h-[90vh] w-full">
-              <button
-                className="absolute top-4 right-4 text-white text-xl hover:text-purple-400"
-                onClick={() => setSelectedImage(null)}
-              >
-                ×
-              </button>
-              <img
-                src={selectedImage}
-                alt="Enlarged view"
-                className="w-full h-full object-contain"
-              />
+          <div className="max-w-4xl mx-auto">
+            <div className="carousel-container">
+              <Slider {...carouselSettings}>
+                {images.map((image, index) => (
+                  <div key={index} className="px-2 pb-4">
+                    <div 
+                      className="cursor-pointer flex justify-center"
+                      onClick={() => setSelectedImage(image.src)}
+                    >
+                      <img
+                        src={image.src}
+                        alt={image.alt}
+                        className="rounded-lg shadow-md max-h-[600px] w-auto object-contain mx-auto"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </Slider>
             </div>
           </div>
-        )}
-      </section>
-
-      {/* Call to Action */}
-      <section className="bg-purple-700 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
-            Join Our Prayer Movement
-          </h2>
-          <p className="text-xl text-purple-100 mb-8 max-w-2xl mx-auto">
-            Together, we can make a difference through the power of prayer.
-          </p>
-          <Link
-            to="/register"
-            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-purple-700 bg-white hover:bg-purple-50"
-          >
-            Get Started Today
-          </Link>
         </div>
       </section>
 
-      {/* Donations Section */}
-<section className="py-20 bg-gradient-to-r from-purple-50 to-indigo-50">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div className="text-center mb-12">
-      <h2 className="text-3xl font-bold text-gray-900 mb-4">
-        Partner With Us
-      </h2>
-      <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-        Support our mission to establish prayer networks and promote peace across nations. 
-        Your generous donation will help us achieve our <Link to="/about" className="text-purple-600 hover:text-purple-800">strategic goals</Link>.
-      </p>
-    </div>
-    
-    <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 max-w-4xl mx-auto">
-      <div className="prose prose-purple max-w-none mb-8">
-        <p className="text-gray-600 text-center">
-          As the Spirit leads you, partner with us in this divine mandate through your generous donations. 
-          Every contribution helps us extend our reach and impact more lives through prayer.
-        </p>
+      {/* Featured Products Section */}
+      {featuredProducts.length > 0 && (
+        <section className="py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                Featured Products
+              </h2>
+              <p className="text-gray-600 mb-12">
+                Shop our collection of Christian merchandise
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {featuredProducts.map((product) => (
+                <Link
+                  key={product.id}
+                  to={`/shop/${product.id}`}
+                  className="group"
+                >
+                  <div className="bg-gray-50 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <div className="aspect-w-1 aspect-h-1 bg-gray-200">
+                      <img
+                        src={product.image_url}
+                        alt={product.name}
+                        className="w-full h-full object-center object-cover group-hover:opacity-75"
+                      />
+                    </div>
+                    <div className="p-4">
+                      <h3 className="text-sm font-medium text-gray-900">
+                        {product.name}
+                      </h3>
+                      <p className="mt-1 text-lg font-medium text-purple-600">
+                        ₦{product.price.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            <div className="text-center mt-12">
+              <Link
+                to="/shop"
+                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
+              >
+                <ShoppingBag className="mr-2 -ml-1 h-5 w-5" />
+                Visit Shop
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Call to Action and Donations Container */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-16">
+        {/* Call to Action Section */}
+        <section className="bg-purple-700 rounded-2xl overflow-hidden">
+          <div className="px-8 py-12 text-center">
+            <h2 className="text-3xl font-bold text-white mb-4">
+              Join Our Prayer Movement
+            </h2>
+            <p className="text-xl text-purple-100 mb-8">
+              Together, we can make a difference through the power of prayer.
+            </p>
+            <Link
+              to="/register"
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-purple-700 bg-white hover:bg-purple-50"
+            >
+              Get Started Today
+            </Link>
+          </div>
+        </section>
+
+        {/* Donations Section */}
+        <section className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl overflow-hidden">
+          <div className="px-8 py-12">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                Partner With Us
+              </h2>
+              <p className="text-gray-600">
+                Support our mission to establish prayer networks and promote peace across nations. 
+                Your generous donation will help us achieve our <Link to="/about" className="text-purple-600 hover:text-purple-800">strategic goals</Link>.
+              </p>
+            </div>
+            
+            <div className="flex justify-center">
+              <Link
+                to="/donate"
+                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 transition-colors"
+              >
+                Make a Donation
+                <Heart className="ml-2 -mr-1 h-5 w-5" />
+              </Link>
+            </div>
+          </div>
+        </section>
       </div>
-      
-      <div className="flex justify-center">
-        <Link
-          to="/donate"
-          className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 transition-colors"
-        >
-          Make a Donation
-          <Heart className="ml-2 -mr-1 h-5 w-5" />
-        </Link>
-      </div>
-    </div>
-  </div>
-</section>
 
       {/* National Day of Prayer */}
       <section className="bg-gradient-to-r from-blue-200 to-purple-200 rounded-lg shadow-md py-10 px-6 md:px-12 lg:px-24">

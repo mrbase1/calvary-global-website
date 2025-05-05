@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, Globe, Heart, LogOut, User, Info, Calendar, Settings, Scale } from 'lucide-react';
+import { Menu, X, Globe, Heart, LogOut, User, Info, Calendar, Settings, Scale, ShoppingBag, ShoppingCart } from 'lucide-react';
 import { useAuth } from '../contexts/useAuth';
 import { supabase } from '../lib/supabase';
+import { Menu as HeadlessMenu, Transition } from '@headlessui/react';
+import { useCart } from '../stores/cartStore';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
   const { user, signOut, profile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { items } = useCart();
 
   const handleSignOut = async () => {
     try {
@@ -46,14 +49,25 @@ export function Navbar() {
     checkSession();
   }, [user, profile]);
 
+  React.useEffect(() => {
+    if (user) {
+      useCart.getState().fetchCart();
+    }
+  }, [user]);
+
   const isActive = (path: string) => {
     return location.pathname === path;
   };
 
-  // Move this after the useEffect to ensure profile is loaded
   const isAdminOrPastor = React.useMemo(() => {
     return profile?.role === 'admin' || profile?.role === 'pastor';
   }, [profile?.role]);
+
+  const userNavigation = [
+    { name: 'Profile', href: '/dashboard', icon: User },
+    { name: 'Orders', href: '/orders', icon: ShoppingBag },
+    ...(isAdminOrPastor ? [{ name: 'Admin', href: '/admin', icon: Settings }] : []),
+  ];
 
   return (
     <nav className="bg-white shadow-lg">
@@ -107,42 +121,84 @@ export function Navbar() {
               <Scale className="h-5 w-5 mr-1" />
               Legal
             </Link>
+            <Link
+              to="/shop"
+              className="text-gray-600 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium"
+            >
+              <ShoppingBag className="h-5 w-5 inline-block mr-1" />
+              Shop
+            </Link>
+            <Link
+              to="/cart"
+              className="text-gray-600 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium relative"
+            >
+              <ShoppingCart className="h-5 w-5 inline-block mr-1" />
+              Cart
+              {items.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {items.length}
+                </span>
+              )}
+            </Link>
             {user ? (
-              <>
-                <Link
-                  to="/dashboard"
-                  className={`flex items-center text-gray-700 hover:text-purple-600 ${
-                    isActive('/dashboard') ? 'text-purple-600' : ''
-                  }`}
+              <HeadlessMenu as="div" className="relative ml-3">
+                <HeadlessMenu.Button className="flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+                  <span className="sr-only">Open user menu</span>
+                  <div className="h-8 w-8 rounded-full bg-purple-600 flex items-center justify-center text-white">
+                    {user.email?.[0].toUpperCase()}
+                  </div>
+                </HeadlessMenu.Button>
+                <Transition
+                  as={Fragment}
+                  enter="transition ease-out duration-100"
+                  enterFrom="transform opacity-0 scale-95"
+                  enterTo="transform opacity-100 scale-100"
+                  leave="transition ease-in duration-75"
+                  leaveFrom="transform opacity-100 scale-100"
+                  leaveTo="transform opacity-0 scale-95"
                 >
-                  <User className="h-5 w-5 mr-1" />
-                  Dashboard
-                </Link>
-                <button
-                  onClick={handleSignOut}
-                  className="flex items-center text-gray-700 hover:text-purple-600"
-                >
-                  <LogOut className="h-5 w-5 mr-1" />
-                  Sign Out
-                </button>
-              </>
+                  <HeadlessMenu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    {userNavigation.map((item) => (
+                      <HeadlessMenu.Item key={item.name}>
+                        {({ active }) => (
+                          <Link
+                            to={item.href}
+                            className={`${
+                              active ? 'bg-gray-100' : ''
+                            } block px-4 py-2 text-sm text-gray-700`}
+                          >
+                            <div className="flex items-center">
+                              <item.icon className="h-4 w-4 mr-2" />
+                              {item.name}
+                            </div>
+                          </Link>
+                        )}
+                      </HeadlessMenu.Item>
+                    ))}
+                    <HeadlessMenu.Item>
+                      {({ active }) => (
+                        <button
+                          onClick={handleSignOut}
+                          className={`${
+                            active ? 'bg-gray-100' : ''
+                          } block w-full px-4 py-2 text-left text-sm text-gray-700`}
+                        >
+                          <div className="flex items-center">
+                            <LogOut className="h-4 w-4 mr-2" />
+                            Sign Out
+                          </div>
+                        </button>
+                      )}
+                    </HeadlessMenu.Item>
+                  </HeadlessMenu.Items>
+                </Transition>
+              </HeadlessMenu>
             ) : (
               <Link
                 to="/login"
                 className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700"
               >
                 Sign In
-              </Link>
-            )}
-            {isAdminOrPastor && (
-              <Link
-                to="/admin"
-                className={`flex items-center text-gray-700 hover:text-purple-600 ${
-                  location.pathname.startsWith('/admin') ? 'text-purple-600' : ''
-                }`}
-              >
-                <Settings className="h-5 w-5 mr-1" />
-                Admin
               </Link>
             )}
           </div>
@@ -196,47 +252,46 @@ export function Navbar() {
               <Heart className="h-5 w-5 mr-2" />
               Prayer Requests
             </Link>
-            {user ? (
-              <>
-                <Link
-                  to="/dashboard"
-                  className={`flex items-center px-3 py-2 rounded-md text-base font-medium ${
-                    isActive('/dashboard')
-                      ? 'text-purple-600 bg-purple-50'
-                      : 'text-gray-700 hover:text-purple-600'
-                  }`}
-                >
-                  <User className="h-5 w-5 mr-2" />
-                  Dashboard
-                </Link>
-                <button
-                  onClick={handleSignOut}
-                  className="flex items-center w-full px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-purple-600"
-                >
-                  <LogOut className="h-5 w-5 mr-2" />
-                  Sign Out
-                </button>
-              </>
-            ) : (
-              <Link
-                to="/login"
-                className="flex items-center px-3 py-2 rounded-md text-base font-medium bg-purple-600 text-white hover:bg-purple-700"
-              >
-                Sign In
-              </Link>
-            )}
-            {isAdminOrPastor && (
-              <Link
-                to="/admin"
-                className={`flex items-center px-3 py-2 rounded-md text-base font-medium ${
-                  location.pathname.startsWith('/admin')
-                    ? 'text-purple-600 bg-purple-50'
-                    : 'text-gray-700 hover:text-purple-600'
-                }`}
-              >
-                <Settings className="h-5 w-5 mr-2" />
-                Admin
-              </Link>
+            <Link
+              to="/shop"
+              className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-purple-600"
+            >
+              <ShoppingBag className="h-5 w-5 mr-2" />
+              Shop
+            </Link>
+            <Link
+              to="/cart"
+              className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-purple-600 relative"
+            >
+              <ShoppingCart className="h-5 w-5 mr-2" />
+              Cart
+              {items.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {items.length}
+                </span>
+              )}
+            </Link>
+            {user && (
+              <div className="border-t border-gray-200 pt-4 mt-4">
+                <div className="flex items-center px-3 py-2">
+                  <div className="h-8 w-8 rounded-full bg-purple-600 flex items-center justify-center text-white">
+                    {user.email?.[0].toUpperCase()}
+                  </div>
+                  <div className="ml-3">
+                    <div className="text-sm font-medium text-gray-700">{user.email}</div>
+                  </div>
+                </div>
+                {userNavigation.map((item) => (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-purple-600"
+                  >
+                    <item.icon className="h-5 w-5 mr-2" />
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
             )}
           </div>
         </div>

@@ -51,6 +51,7 @@ export type Database = {
           status: 'pending' | 'in_progress' | 'completed'
           is_anonymous: boolean
           user_id: string
+          completion_message: string | null
         }
         Insert: {
           id?: string

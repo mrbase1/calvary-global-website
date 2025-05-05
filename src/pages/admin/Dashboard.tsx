@@ -7,7 +7,8 @@ import {
   Mail, 
   DollarSign, 
   Users,
-  Settings 
+  Settings,
+  ShoppingBag // Add this import
 } from 'lucide-react';
 
 export function AdminDashboard() {
@@ -67,6 +68,13 @@ export function AdminDashboard() {
           >
             <Settings className="h-5 w-5 mr-3" />
             Settings
+          </Link>
+          <Link
+            to="/admin/shop"
+            className="flex items-center px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-700"
+          >
+            <ShoppingBag className="h-5 w-5 mr-3" />
+            Shop Management
           </Link>
         </nav>
       </div>

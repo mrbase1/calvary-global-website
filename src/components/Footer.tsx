@@ -51,6 +51,9 @@ export function Footer() {
               <li>
                 <Link to="/testimonies" className="hover:text-purple-400">Testimonies</Link>
               </li>
+              <li>
+                <Link to="/legal" className="hover:text-purple-400">Legal</Link>
+              </li>
             </ul>
           </div>
 
